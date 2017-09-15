@@ -65,6 +65,13 @@ export default class Phone extends DI {
         }
       )
   }
+
+  injector (result, dependence, injected) {
+    dependence.map((item, index) => {
+      result[`$${item.toLocaleLowerCase()}`] = injected[index]
+    })
+  }
+
 }
 
 const phone = new Phone({

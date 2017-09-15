@@ -44,6 +44,12 @@ export default class DI {
     throw new Error(`Please set initialization Dependency Injection configuration.`)
   }
 
+  injector (result, dependence, injected) {
+    dependence.map((item, index) => {
+      result[`_${item.toLocaleLowerCase()}`] = injected[index]
+    })
+  }
+
   inject (module, dependencies = [], initCallback) {
     const moduleName = module.name
     const beforeDependencies = module._dependencies || []
@@ -63,6 +69,7 @@ export default class DI {
       } else {
         result = new module()
       }
+      this.injector(result, dependence, injected)
       if (isAsyncInitCallback) {
         await initCallback(...this._filter(injected, dependence, dependencies), result)
       } else {

@@ -4,6 +4,7 @@ import Environment from './Environment'
 import Network from './Network'
 import Storage from './Storage'
 import Contacts from './Contacts'
+import Done from './Done'
 
 export default class Phone extends DI {
   constructor (...config) {
@@ -12,48 +13,59 @@ export default class Phone extends DI {
 
   initialize () {
     this
-      .inject('Call', [
+      .inject(Call, [
           'Contacts',
           'Network',
         ],
-        (contacts, network) => {
+        (contacts, network, call) => {
           console.log(contacts)
-          return new Call()
-        })
-      .inject('Contacts', [
+          call.a = contacts.afterTest
+        }
+      )
+      .inject(Contacts, [
           'Storage',
-          'Network',
         ],
-        async () => {
-          await new Promise(function (resolve) {
-            setTimeout(function () {
-              resolve()
-            }, 1000)
-          })
-          return await new Promise(initCallback => new Contacts({initCallback}))
-        })
-      .inject('Environment',
+        async (storage, contacts) => {
+          console.log(storage, contacts,"afterContacts")
+          // await new Promise(function (resolve) {
+          //   setTimeout(function () {
+          //     resolve()
+          //   }, 1000)
+          // })
+        }
+      )
+      .inject(Environment,
         [],
         () => {
-          return new Environment()
-        })
-      .inject('Network', [
+
+        }
+      )
+      .inject(Network, [
           'Environment',
         ],
         () => {
-          return new Network()
-        })
-      .inject('Storage', [
+
+        }
+      )
+      .inject(Storage, [
           'Environment',
         ],
         () => {
-          return new Storage()
-        })
+
+        }
+      )
+      .inject(Done, [
+          'Call',
+        ],
+        (call) => {
+          console.log(call.a,)
+        }
+      )
   }
 }
 
 const phone = new Phone({
-  state: "CN"
+  state: 'CN'
 })
 
-console.log(phone)
+// console.log(phone)

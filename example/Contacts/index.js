@@ -1,15 +1,18 @@
 import Module from '../../src/Module'
 import depend from '../../lib/decorator'
 
-@depend('Network','Storage')
+@depend(['Network', 'Storage'], (network, storage) => {
+  console.log(network, storage, 'beforeContacts')
+})
 export default class Contacts extends Module {
   constructor (...args) {
     super(...args)
-    console.log('Contacts')
+    this._moduleName = 'Contacts'
     this.initTest = 'Test Contacts'
+    console.log('Contacts')
   }
 
-  initialize ({initCallback} = {}) {
+  async initialize ({initCallback} = {}) {
     return setTimeout(() => {
       this.afterTest = 'afterTest 5s'
       initCallback(this)

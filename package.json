@@ -1,7 +1,7 @@
 {
   "name": "glaive",
   "version": "1.0.0",
-  "description": "Trying to build a new dependency module loading tool",
+  "description": "Trying to build a new dependency module injector",
   "main": "dist/index.js",
   "scripts": {
     "test": "test"

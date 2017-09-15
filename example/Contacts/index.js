@@ -1,7 +1,12 @@
 import Module from '../../src/Module'
 import depend from '../../lib/decorator'
 
-@depend(['Network', 'Storage'], (network, storage) => {
+@depend(['Network', 'Storage'], async (network, storage) => {
+  await new Promise(function (resolve) {
+    setTimeout(function () {
+      resolve()
+    }, 1000)
+  })
   console.log(network, storage, 'beforeContacts')
 })
 export default class Contacts extends Module {

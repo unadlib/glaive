@@ -1,4 +1,7 @@
+import { log } from '../lib/decorator'
+
 export default class Module {
+
   constructor (...args) {
     this.initialize(...args)
   }

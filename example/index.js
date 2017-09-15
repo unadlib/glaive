@@ -20,45 +20,48 @@ export default class Phone extends DI {
         (contacts, network, call) => {
           console.log(contacts)
           call.a = contacts.afterTest
+          console.log('\n')
         }
       )
       .inject(Contacts, [
           'Storage',
         ],
         async (storage, contacts) => {
+          await new Promise(function (resolve) {
+            setTimeout(function () {
+              resolve()
+            }, 1000)
+          })
           console.log(storage, contacts,"afterContacts")
-          // await new Promise(function (resolve) {
-          //   setTimeout(function () {
-          //     resolve()
-          //   }, 1000)
-          // })
+          console.log('\n')
         }
       )
       .inject(Environment,
         [],
         () => {
-
+          console.log('\n')
         }
       )
       .inject(Network, [
           'Environment',
         ],
         () => {
-
+          console.log('\n')
         }
       )
       .inject(Storage, [
           'Environment',
         ],
         () => {
-
+          console.log('\n')
         }
       )
       .inject(Done, [
           'Call',
         ],
         (call) => {
-          console.log(call.a,)
+          console.log(call.a)
+          console.log('\n')
         }
       )
   }

@@ -1,4 +1,4 @@
-import DI from '../lib/DI'
+import DI from '../src/DI'
 import Call from './Call'
 import Environment from './Environment'
 import Network from './Network'

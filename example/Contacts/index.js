@@ -1,5 +1,7 @@
-import Module from '../../lib/Module'
+import Module from '../../src/Module'
+import depend from '../../lib/decorator'
 
+@depend('Network','Storage')
 export default class Contacts extends Module {
   constructor (...args) {
     super(...args)

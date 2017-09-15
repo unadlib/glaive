@@ -1,4 +1,4 @@
-import Module from '../../lib/Module'
+import Module from '../../src/Module'
 
 export default class Environment extends Module {
   constructor (...opts) {

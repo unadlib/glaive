@@ -10,6 +10,11 @@ import replace from "rollup-plugin-replace"
 
 const pgk = require("./package.json")
 const isPro = process.env.NODE_ENV === "production"
+const babelConfig = babelrc({
+  config: pgk.babel,
+  // use babel-plugin-external-helpers,it set `true` to enable log unused modules.
+  //addExternalHelpersPlugin: false,
+})
 
 export default {
   input: "src/index.js",
@@ -24,13 +29,7 @@ export default {
   },
   plugins: [
     resolve(),
-    babel(
-      babelrc({
-        config: pgk.babel,
-        // use babel-plugin-external-helpers,it set `true` to enable log unused modules.
-        //addExternalHelpersPlugin: false,
-      }),
-    ),
+    babel(babelConfig),
     isPro && butternut(),
     replace({
       ENV: JSON.stringify(process.env.NODE_ENV || "development"),

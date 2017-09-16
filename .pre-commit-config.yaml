@@ -1,0 +1,4 @@
+    -   repo: https://github.com/prettier/prettier
+        sha: 'pre-commit format code '
+        hooks:
+        -   id: prettier

@@ -1,17 +1,19 @@
-import { log } from '../lib/decorator'
+// import { log } from '../lib/decorator'
 
 export default class Module {
-
-  constructor (...args) {
+  constructor(...args) {
     this.initialize(...args)
   }
 
-  initialize ({initCallBack} = {}) {
+  initialize({ initCallBack = () => {} } = {}) {
     const callback = initCallBack || this._initCallBack
+    if (typeof initCallBack !== "function") {
+      throw new Error('"initCallBack" must be a function')
+    }
     return callback(this)
   }
 
-  _initCallBack () {
+  _initCallBack() {
     return this
   }
 }

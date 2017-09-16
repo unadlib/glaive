@@ -15,7 +15,8 @@ export default {
   input: "src/index.js",
   output: {
     file: `dist/glaive${isPro ? ".min" : ""}.js`,
-    format: "umd", // options: amd, cjs, es, iife, umd
+    // options: amd, cjs, es, iife, umd
+    format: "umd",
     name: "glaive",
     sourcemap: true,
     banner: `/* ${pgk.name} version ${pgk.version} */`,

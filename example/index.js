@@ -38,7 +38,6 @@ export default class Phone extends DI {
       .inject(Done, ["Call"], call => {
         console.log(call.a)
         console.log("\n")
-        console.log(Object.keys(phone))
       })
   }
 
@@ -48,9 +47,13 @@ export default class Phone extends DI {
     })
   }
 }
-
-const phone = new Phone({
-  state: "CN",
-})
-
-console.log(phone)
+;(async () => {
+  const phone = await new Phone(
+    {
+      state: "CN",
+    },
+    phone => {
+      console.log(phone)
+    },
+  )
+})()

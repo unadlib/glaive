@@ -1,11 +1,11 @@
-/* glaive version 1.0.1 */
+/* glaive version 1.1.0 */
 ;(function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined"
-    ? (module.exports = factory())
+    ? factory(exports)
     : typeof define === "function" && define.amd
-      ? define(factory)
-      : (global.glaive = factory())
-})(this, function() {
+      ? define(["exports"], factory)
+      : factory((global.glaive = {}))
+})(this, function(exports) {
   "use strict"
 
   var is = new Proxy(
@@ -173,17 +173,26 @@
   }
 
   var DI = (function() {
-    function DI(config) {
+    function DI(config, callback) {
       classCallCheck(this, DI)
 
       this._config = config
+      this._callback = callback
       this._modules = []
       this._module = {}
       this.initialize()
-      this.bootstrap().then()
+      this.bootstrap().then(this._complete.bind(this))
     }
 
     createClass(DI, [
+      {
+        key: "_complete",
+        value: function _complete() {
+          this._callback && this._callback(this)
+          this.initiated = true
+          return this
+        },
+      },
       {
         key: "_queue",
         value: function _queue(modules, list) {
@@ -216,8 +225,8 @@
       },
       {
         key: "_filter",
-        value: function _filter(injected, dependencie, injectedDependencies) {
-          return dependencie
+        value: function _filter(injected, dependence, injectedDependencies) {
+          return dependence
             .map(function(item, index) {
               return {
                 moduleName: item,
@@ -414,12 +423,28 @@
     return Module
   })()
 
+  var depend = function depend() {
+    var dependencies =
+      arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : []
+    var callback = arguments[1]
+    return function(target) {
+      target._dependencies = dependencies
+      target._callback = callback
+    }
+  }
+
   var index = {
     DI: DI,
     Module: Module,
+    depend: depend,
   }
 
-  return index
+  exports["default"] = index
+  exports.DI = DI
+  exports.Module = Module
+  exports.depend = depend
+
+  Object.defineProperty(exports, "__esModule", { value: true })
 })
 /* follow glaive on Github! git+https://github.com/unadlib/glaive.git */
 //# sourceMappingURL=glaive.js.map

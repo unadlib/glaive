@@ -1,10 +1,12 @@
 {
   "name": "glaive",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Trying to build a new dependency module injector",
   "main": "dist/glaive.js",
   "scripts": {
     "test": "mocha --compilers js:babel-core/register __tests__/**.js",
+    "test:cover": "nyc --reporter=html --reporter=text mocha --compilers js:babel-core/register __tests__/**.js",
+    "test:cover:coverage": "npm run test:cover && nyc report --reporter=text-lcov | coveralls",
     "build": "cross-env NODE_ENV=production rollup -c",
     "dev": "cross-env NODE_ENV=development rollup -c",
     "prettier": "prettier --write '{src,lib}/**/*.js'",
@@ -32,8 +34,7 @@
     ],
     "plugins": [
       "transform-decorators-legacy",
-      "transform-function-bind",
-      "external-helpers"
+      "transform-function-bind"
     ]
   },
   "lint-staged": {
@@ -50,6 +51,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babelrc-rollup": "^3.0.0",
     "chai": "^4.1.2",
+    "coveralls": "^2.13.1",
     "cross-env": "^5.0.5",
     "husky": "^0.14.3",
     "karma": "^1.7.1",
@@ -59,6 +61,7 @@
     "karma-rollup-plugin": "^0.2.4",
     "lint-staged": "^4.2.1",
     "mocha": "^3.5.3",
+    "nyc": "^11.2.1",
     "prettier": "^1.7.0",
     "rollup": "^0.49.3",
     "rollup-plugin-babel": "^3.0.2",

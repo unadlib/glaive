@@ -3,6 +3,7 @@ import babel from "rollup-plugin-babel"
 import babelrc from "babelrc-rollup"
 import butternut from "rollup-plugin-butternut"
 import replace from "rollup-plugin-replace"
+// `yarn example` and babel plugin external-helpers is conflict
 
 // older Compression way, it set `uglify({}, minify)` to `plugins`
 // import uglify from 'rollup-plugin-uglify'

@@ -1,12 +1,19 @@
 import is from "../lib/isType"
 
 export default class DI {
-  constructor(config) {
+  constructor(config, callback) {
     this._config = config
+    this._callback = callback
     this._modules = []
     this._module = {}
     this.initialize()
-    this.bootstrap().then()
+    this.bootstrap().then(this::this._complete)
+  }
+
+  _complete() {
+    this._callback && this._callback(this)
+    this.initiated = true
+    return this
   }
 
   _queue(modules, list) {
@@ -28,8 +35,8 @@ export default class DI {
     }
   }
 
-  _filter(injected, dependencie, injectedDependencies) {
-    return dependencie
+  _filter(injected, dependence, injectedDependencies) {
+    return dependence
       .map((item, index) => ({
         moduleName: item,
         module: injected[index],

@@ -1,12 +1,12 @@
 {
   "name": "glaive",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Trying to build a new dependency module injector",
   "main": "dist/glaive.js",
   "scripts": {
     "test": "mocha --compilers js:babel-core/register __tests__/**.js",
     "test:cover": "nyc --reporter=html --reporter=text mocha --compilers js:babel-core/register __tests__/**.js",
-    "test:cover:coverage": "npm run test:cover && nyc report --reporter=text-lcov | coveralls",
+    "test:cover:travis": "npm run test:cover && nyc report --reporter=text-lcov | coveralls",
     "build": "cross-env NODE_ENV=production rollup -c",
     "dev": "cross-env NODE_ENV=development rollup -c",
     "prettier": "prettier --write '{src,lib}/**/*.js'",

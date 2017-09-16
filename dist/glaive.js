@@ -1,4 +1,4 @@
-/* glaive version 1.1.1 */
+/* glaive version 1.1.2 */
 ;(function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined"
     ? factory(exports)

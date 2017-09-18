@@ -1,12 +1,14 @@
 import is from "../lib/isType"
 
-export default class DI {
-  constructor(config, callback) {
-    this._config = config
+export default class Injector {
+  constructor({ config, callback } = {}) {
+    const { infuse } = config
+    if (is.Function(infuse)) {
+      ;this::infuse(config)
+    }
     this._callback = callback
     this._modules = []
     this._module = {}
-    this.initialize()
     this.bootstrap().then(this::this._complete)
   }
 
@@ -45,11 +47,11 @@ export default class DI {
       .map(({ module }) => module)
   }
 
-  initialize() {
-    throw new Error(
-      `Please set initialization Dependency Injection configuration.`,
-    )
-  }
+  // initialize() {
+  //   throw new Error(
+  //     `Please set initialization Dependency Injection configuration.`,
+  //   )
+  // }
 
   inject(module, dependencies = [], initCallback) {
     const moduleName = module.name
@@ -79,7 +81,7 @@ export default class DI {
       } else {
         result = new module()
       }
-      this.injector(result, dependence, injected)
+      this.distribute(result, dependence, injected)
       if (isAsyncInitCallback) {
         await initCallback(
           ...this._filter(injected, dependence, dependencies),
@@ -103,7 +105,7 @@ export default class DI {
     return this
   }
 
-  injector(result, dependence, injected) {
+  distribute(result, dependence, injected) {
     dependence.map((item, index) => {
       result[`_${item.toLocaleLowerCase()}`] = injected[index]
     })

@@ -1,25 +1,28 @@
-import Module from '../../src/Module'
-import depend from '../../lib/decorator'
+import Module from "../../src/Module"
+import Decorator from "../../lib/Decorator"
 
-@depend(['Network', 'Storage'], async (network, storage) => {
-  await new Promise(function (resolve) {
-    setTimeout(function () {
-      resolve()
-    }, 1000)
-  })
-  console.log(network, storage, 'beforeContacts')
+@Decorator({
+  deps: ["Network", "Storage"],
+  before: async (network, storage) => {
+    await new Promise(function(resolve) {
+      setTimeout(function() {
+        resolve()
+      }, 1000)
+    })
+    console.log(network, storage, "beforeContacts")
+  },
 })
 export default class Contacts extends Module {
-  constructor (...args) {
+  constructor(...args) {
     super(...args)
-    this._moduleName = 'Contacts'
-    this.initTest = 'Test Contacts'
-    console.log('Contacts')
+    this._moduleName = "Contacts"
+    this.initTest = "Test Contacts"
+    console.log("Contacts")
   }
 
-  async initialize ({initCallback} = {}) {
+  async initialize({ initCallback } = {}) {
     return setTimeout(() => {
-      this.afterTest = 'afterTest 5s'
+      this.afterTest = "afterTest 5s"
       initCallback(this)
     }, 5000)
   }

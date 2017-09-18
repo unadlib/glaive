@@ -1,4 +1,4 @@
-import { DI, Module } from "../src/index"
+import { Injector, Module } from "../src/index"
 import is from "../lib/isType"
 
 // const testModules = [{
@@ -18,7 +18,7 @@ import is from "../lib/isType"
 //   dependence: ['c'],
 // }]
 // const list = []
-// Reflect.apply(DI.prototype._queue, DI.prototype, [testModules, list])
+// Reflect.apply(Injector.prototype._queue, Injector.prototype, [testModules, list])
 // console.log(list)
 
 class A extends Module {
@@ -39,7 +39,7 @@ class B extends Module {
   }
 }
 
-class TestModel extends DI {
+class TestModel extends Injector {
   constructor(...config) {
     super(...config)
   }

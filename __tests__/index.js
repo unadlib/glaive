@@ -1,7 +1,7 @@
 import { expect } from "chai"
 import { DI, Module } from "../src/index"
 import is from "../lib/isType"
-import decorator from "../lib/decorator"
+import Decorator from "../lib/Decorator"
 
 describe("Glaive", () => {
   describe("#Module Test", () => {

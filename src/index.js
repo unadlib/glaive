@@ -1,11 +1,11 @@
-import DI from "./DI"
+import Injector from "./Injector"
 import Module from "./Module"
-import depend from "../lib/decorator"
+import Decorator from "../lib/Decorator"
 
 export default {
-  DI,
+  Injector,
   Module,
-  depend,
+  Decorator,
 }
 
-export { DI, Module, depend }
+export { Injector, Module, Decorator }

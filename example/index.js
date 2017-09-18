@@ -12,7 +12,7 @@ export default class Phone extends Injector {
     this.inject({
       module: Call,
       deps: ["Contacts", "Network"],
-      infuse: {
+      params: {
         fn: () => {},
       },
       before: (contacts, network) => {

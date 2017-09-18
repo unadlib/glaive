@@ -15,8 +15,6 @@ import Decorator from "../../lib/Decorator"
 export default class Contacts extends Module {
   constructor(...args) {
     super(...args)
-    this._moduleName = "Contacts"
-    this.initTest = "Test Contacts"
     console.log("Contacts")
   }
 

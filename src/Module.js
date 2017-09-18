@@ -1,4 +1,4 @@
-// import { log } from '../lib/decorator'
+import is from "../lib/isType"
 
 export default class Module {
   constructor(...args) {
@@ -7,7 +7,7 @@ export default class Module {
 
   initialize({ initCallBack = () => {} } = {}) {
     const callback = initCallBack || this._initCallBack
-    if (typeof initCallBack !== "function") {
+    if (is.Function(initCallBack)) {
       throw new Error('"initCallBack" must be a function')
     }
     return callback(this)

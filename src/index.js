@@ -1,6 +1,6 @@
 import Injector from "./Injector"
 import Module from "./Module"
-import Decorator from "../lib/Decorator"
+import Decorator from "./Decorator"
 
 export default {
   Injector,

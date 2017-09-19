@@ -1,19 +1,17 @@
 import is from "../lib/isType"
+import allot from "../lib/allot"
 
 export default class Module {
-  constructor(...args) {
-    this.initialize(...args)
-  }
-
-  initialize({ initCallBack = () => {} } = {}) {
-    const callback = initCallBack || this._initCallBack
-    if (is.Function(initCallBack)) {
-      throw new Error('"initCallBack" must be a function')
+  constructor(args) {
+    const isFunction = is.Function(this._allotParams)
+    if (isFunction) {
+      this._allotParams(args)
+    } else {
+      throw new Error('"_allotParams" must be a function')
     }
-    return callback(this)
   }
 
-  _initCallBack() {
-    return this
+  _allotParams(config) {
+    return this::allot(config)
   }
 }

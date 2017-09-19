@@ -4,101 +4,164 @@ import Environment from "./Environment"
 import Network from "./Network"
 import Storage from "./Storage"
 import Contacts from "./Contacts"
+import ContactsSearch from "./ContactsSearch"
 import Done from "./Done"
 
 export default class Phone extends Injector {
   constructor(...config) {
     super(...config)
-    this.inject({
-      module: Call,
-      deps: ["Contacts", "Network"],
-      params: {
-        fn: () => {},
+    this.inject([
+      {
+        module: Call,
+        deps: ["Contacts", "Network"],
       },
-      before: (contacts, network) => {
-        return { c: 1 }
-      },
-      after: (contacts, network, call) => {
-        console.log(contacts)
-        call.a = contacts.afterTest
-        console.log("\n")
-        return { a: 1 }
-      },
-    })
-      .inject({
+      {
         module: Contacts,
         deps: ["Storage"],
-        after: async (storage, contacts) => {
-          await new Promise(function(resolve) {
-            setTimeout(function() {
-              resolve()
-            }, 1000)
-          })
-          console.log(storage, contacts, "afterContacts")
-          console.log("\n")
-        },
-      })
-      .inject({
+      },
+      {
         module: Environment,
-        deps: [],
-        after: () => {
-          console.log("\n")
-        },
-      })
-      .inject({
+      },
+      {
         module: Network,
         deps: ["Environment"],
-        after: () => {
-          console.log("\n")
-        },
-      })
-      .inject({
+      },
+      {
         module: Storage,
         deps: ["Environment"],
-        after: () => {
-          console.log("\n")
-        },
-      })
-      .inject({
+      },
+      {
         module: Done,
         deps: ["Call"],
-        after: call => {
-          console.log(call.a)
-          console.log("\n")
-        },
-      })
-  }
-
-  distribute(result, dependence, injected) {
-    dependence.map((item, index) => {
-      result[`$${item.toLocaleLowerCase()}`] = injected[index]
-    })
+      },
+    ])
   }
 }
 
 class FooBarPhone extends Phone {
   constructor(...arg) {
     super(...arg)
-    // this
-    //   .inject({
-    //     module: Call,
-    //     deps: ["Contacts", "Network"],
-    //     infuse: {
-    //       fn: () => {
-    //       },
-    //     },
-    //     before: (contacts, network) => {
-    //       return {XoPhone: 1}
-    //     }
-    //   })
+    this.inject([
+      {
+        module: ContactsSearch,
+        deps: ["Call"],
+      },
+    ])
   }
 }
 
-const phone = new FooBarPhone(
-  {
-    state: "CN",
+const phone = new FooBarPhone({
+  state: "CN",
+  done: done => {
+    // console.log(done,phone)
   },
-  _phone => {
-    console.log(_phone)
-  },
-)
+})
+
+// class A extends Module {
+//   // constructor(...args) {
+//   //   super(...args)
+//   //   // this._a = 1
+//   // }
+//   // initialize() {
+//   //   console.log('A')
+//   // }
+// }
+//
+// @decorator({deps: ['A']})
+// class B extends A {
+//   // initialize() {
+//   //   this._b = 1
+//   //   console.log('B')
+//   // }
+// }
+//
+// @decorator({deps: ['B']})
+// class E extends B {
+//   // initialize() {
+//   //   this._e = 1
+//   //   console.log('E')
+//   // }
+// }
+//
+// class C extends Module {
+//   // async initialize() {
+//   //   await sleep(1000)
+//   //   this._ds = 1
+//   //   console.log('C')
+//   // }
+// }
+//
+// class D extends C {
+//   // initialize() {
+//   //   this._ds = 1
+//   //   console.log('D')
+//   // }
+// }
+//
+// class Phone extends Injector {
+//   constructor(...args) {
+//     super(...args)
+//     this.inject([
+//       {
+//         module: C,
+//         deps: ['A', 'B'],
+//         params: {
+//           testB: 2,
+//         },
+//         // after: async (...args) => {
+//         //   await sleep(1000)
+//         //   console.log('after')
+//         //
+//         //   return {}
+//         // },
+//         // before: async (...args) => {
+//         //   await sleep(1000)
+//         //   console.log('before')
+//         //   return {}
+//         // },
+//       },
+//       {
+//         module: A,
+//         params: {
+//           testA: 2,
+//         },
+//       },
+//       {
+//         module: B,
+//         params: {
+//           testB: 2,
+//         },
+//       },
+//     ])
+//     // console.log(Object.keys(this._modules),1)
+//   }
+// }
+//
+// class Bee extends Phone {
+//   constructor(...args) {
+//     super(...args)
+//     this.inject([
+//       {
+//         module: E,
+//         params: {
+//           testE: 1,
+//         },
+//       },
+//       {
+//         module: D,
+//         deps: ['E'],
+//         params: {
+//           testB: 1,
+//         },
+//       },
+//     ])
+//   }
+// }
+//
+// const a = new Bee({
+//   text: 1,
+//   done: (s) => {
+//     console.log(`\n`);
+//     console.log(a)
+//   }
+// })

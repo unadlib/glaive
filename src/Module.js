@@ -3,7 +3,7 @@ import allot from "../lib/allot"
 
 export default class Module {
   constructor(args) {
-    const isFunction = is.Function(this._allotParams)
+    const isFunction = is.function(this._allotParams)
     if (isFunction) {
       this._allotParams(args)
     } else {

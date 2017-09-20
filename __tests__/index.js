@@ -26,10 +26,10 @@ describe("Glaive", () => {
   })
   describe("#isType lib Test", () => {
     it("isType authentication type", () => {
-      expect(is.Array([])).to.true
+      expect(is.array([])).to.true
     })
     it("isType authentication type", () => {
-      expect(is.Array({})).to.false
+      expect(is.array({})).to.false
     })
   })
   describe("#sleep lib Test", () => {

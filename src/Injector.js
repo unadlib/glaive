@@ -21,7 +21,7 @@ export default class Injector {
 
   _complete({ done }) {
     this.initiated = true
-    is.Function(done) && done(this.initiated)
+    is.function(done) && done(this.initiated)
   }
 
   _merge(modules) {
@@ -76,13 +76,13 @@ export default class Injector {
       while (queueModules.length > 0) {
         const moduleName = queueModules.shift()
         const current = this._modules.get(moduleName)
-        const isAsync = is.AsyncFunction(this[moduleName].initialize)
+        const isAsync = is.asyncFunction(this[moduleName].initialize)
         const injectors = [...current.injectors]
         let beforeInjectors = injectors.filter(({ before }) => before)
         while (beforeInjectors.length > 0) {
           let unprocessed
           const { before, deps } = beforeInjectors.shift()
-          const isAsyncAction = is.AsyncFunction(before)
+          const isAsyncAction = is.asyncFunction(before)
           const args = deps.map(dep => this[dep])
           if (isAsyncAction) {
             unprocessed = await before(...args, this[moduleName])
@@ -101,7 +101,7 @@ export default class Injector {
         while (afterInjectors.length > 0) {
           let processed
           const { after, deps } = afterInjectors.shift()
-          const isAsyncAction = is.AsyncFunction(after)
+          const isAsyncAction = is.asyncFunction(after)
           const args = deps.map(dep => this[dep])
           if (isAsyncAction) {
             processed = await after(...args, this[moduleName])

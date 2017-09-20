@@ -1,9 +1,9 @@
-import Module from '../../src/Module'
+import Module from "../../src/Module"
 
 export default class Call extends Module {
-  constructor (...opts) {
+  constructor(...opts) {
     super(...opts)
-    this._moduleName = 'Call'
-    console.log('Call')
+    this._moduleName = "Call"
+    console.log("constructor Call")
   }
 }

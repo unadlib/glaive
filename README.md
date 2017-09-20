@@ -8,10 +8,18 @@ Trying to build a new dependency module Injector
 [![npm](https://img.shields.io/npm/l/glaive.svg)](https://www.npmjs.com/package/glaive)
 
 ## Features
-* Support Overall Process Async Dependency Module
-* After/Before Inject Process
-* Support Functional Inject & Decorator Inject
-* Custom Injector
+* overall process async dependency module
+* after/before inject process
+* functional inject & decorator inject
+* custom Injector
+* implement module initialization lifecycle
+* inheritance of module
+* inheritance of module injector
+* override of module injector
+* merge options for value provider
+* custom options distribute to module
+* custom rule distribute to dependency module
+* custom distribute module name to dependency module
 
 ## Usage
 ```bash
@@ -22,52 +30,87 @@ yarn add glaive
 
 ## Example
 ```javascript
-import { DI, Module, depend } from 'glaive'
+import { Injector, Module, Decorator } from 'glaive'
 
 class Call extends Module {}
 
-@depend('Environment',aysnc (environment)=>{
-  //this time is before NetWork init.
+@Decorator({
+  deps: ["Environment"],
+  after: environment => {
+    console.log(environment)
+  },
 })
 class NetWork extends Module {}
 
-class Environment extends Module {}
+class HighSpeedNetWork extends NetWork {}
+
+class Environment extends Module {
+  constructor(...args){
+    super(...args)
+    this.system = 'ios'
+  }
+}
 
 class Storage extends Module {
   constructor(...args) {
     super(...args)
   }
-  async initialize({initCallback} = {}) {
-    return setTimeout(() => initCallback(this), 0)
+  async initialize() {
+    await new Promise(resolve=>setTimeout(resolve, 0))
   }
 }
 
 // All aysnc functions support sync.
 
-class Phone extends DI {
-  constructor(...config) {
-    super(...config)
-  }
-
-  initialize() {
-    this
-      .inject(Environment)
-      .inject(Storage, ['Environment'], async (environment,storage) => {
-        await new Promise((resolve)=>setTimeout(resolve, 0))
-      })
-      .inject(NetWork)
-      .inject(Call, ['Environment','Storage','NetWork'],async (environment,storage,netWork,call) => {
-        // this time is after call init.
-      })
+class Phone extends Injector {
+  constructor(...args) {
+    super(...args)
+    this.inject([
+        {
+          module: Environment,
+          key: "env"
+        },
+        {
+          module: Storage,
+          deps: ['Environment'],
+          before: async (environment,storage) => {
+            console.log(environment,storage)
+            await new Promise(resolve=>setTimeout(resolve, 0))
+          }
+        },
+        {
+          module: NetWork,
+        },
+        {
+          module: Call,
+          deps: ['Environment','Storage','NetWork'],
+          after: async () => {
+            await new Promise(resolve=>setTimeout(resolve, 0)) // this time is after call init.
+          }
+        }
+      ])
   }
 }
 
-const config = {
-  state: 'CN'
+class Mobile extends Phone {
+    constructor(...args){
+      super(...args)
+      this.inject([
+        {
+          module: HighSpeedNetWork,
+          key: '$_HighSpeedNetWork',
+          deps: ['Storage']
+        }
+      ])
+    }
 }
 
-new Phone(config,(phone)=>{
-  console.log(phone.initiated === true) // `new Phone` all actions is initiated.
+const mobile = new Mobile({
+  state: 'CN',
+  done: done => {
+    console.log('\n')
+    console.log(`done is ${done}!\n`, mobile)
+  },
 })
 
 ```

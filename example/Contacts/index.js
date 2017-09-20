@@ -1,7 +1,7 @@
 import Module from "../../src/Module"
 import Decorator from "../../src/Decorator"
 
-@Decorator({ deps: ["Network", "Storage"] })
+@Decorator({ deps: ["Network"] })
 export default class Contacts extends Module {
   constructor(...args) {
     super(...args)

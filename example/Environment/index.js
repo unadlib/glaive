@@ -1,9 +1,9 @@
-import Module from '../../src/Module'
+import Module from "../../src/Module"
 
 export default class Environment extends Module {
-  constructor (...opts) {
+  constructor(...opts) {
     super(...opts)
-    this._moduleName = 'Environment'
-    console.log('Environment')
+    this._moduleName = "Environment"
+    console.log("constructor Environment")
   }
 }

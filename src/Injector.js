@@ -1,17 +1,20 @@
 import is from "../lib/isType"
 import sleep from "../lib/sleep"
 import allot, { prefix } from "../lib/allot"
+import error from "../lib/error"
+import moduleStatus from "../lib/moduleStatus"
 
 export default class Injector {
   constructor(config = {}) {
     const { allotParams = this._allotParams } = config
-    if (is.Function(allotParams)) {
+    if (is.function(allotParams)) {
       ;this::allotParams(config)
     } else {
-      throw new Error(`\'allotParams\' must be a function.`)
+      error.allotParams()
     }
     this._modules = new Map()
     this._queueModules = new Set()
+    this._loadModulesHistory = new Set()
     this._bootstrap(config).then(this::this._complete)
   }
 
@@ -21,7 +24,7 @@ export default class Injector {
 
   _complete({ done }) {
     this.initiated = true
-    is.function(done) && done(this.initiated)
+    return is.function(done) && done(this.initiated)
   }
 
   _merge(modules) {
@@ -61,72 +64,116 @@ export default class Injector {
     const dependenceMap = this._merge(this._modules)
     this._queue(dependenceMap, this._queueModules)
     this._queueModules.forEach(moduleName => {
-      const { Module, parameters } = this._modules.get(moduleName)
-
-      this[moduleName] = new Module(parameters)
+      const { Module, parameters, moduleKey } = this._modules.get(moduleName)
+      this[moduleKey] = new Module(parameters)
+      this[moduleKey].__status = moduleStatus.initialized
     })
     ;this::this.distribute(dependenceMap)
     return this
   }
 
+  _insureUnique() {
+    const overloadModules = [...this._loadModulesHistory].slice(0, -1)
+    overloadModules.forEach((modules = []) =>
+      modules.forEach(({ key, module }) => {
+        const isRemove =
+          this._modules.get(module.prototype.constructor.name).moduleKey !== key
+        if (!is.null(key) && !is.undefined(key) && isRemove) {
+          Reflect.deleteProperty(this, key)
+        }
+      }),
+    )
+  }
+
   async _bootstrap(config) {
     await sleep()
+    this._insureUnique()
     try {
       let queueModules = [...this._queueModules]
       while (queueModules.length > 0) {
         const moduleName = queueModules.shift()
-        const current = this._modules.get(moduleName)
-        const isAsync = is.asyncFunction(this[moduleName].initialize)
-        const injectors = [...current.injectors]
-        let beforeInjectors = injectors.filter(({ before }) => before)
+        const { injectors, moduleKey } = this._modules.get(moduleName)
+        if (!this[moduleKey]) {
+          error.throw(moduleKey)
+          continue
+        }
+        const isAsync = is.asyncFunction(this[moduleKey].initialize)
+        const _injectors = [...injectors]
+        let beforeInjectors = _injectors.filter(({ before }) => before)
+        this[moduleKey].__status = moduleStatus.booting
         while (beforeInjectors.length > 0) {
           let unprocessed
           const { before, deps } = beforeInjectors.shift()
           const isAsyncAction = is.asyncFunction(before)
-          const args = deps.map(dep => this[dep])
+          const args = deps.map(dep => this[this._modules.get(dep).moduleKey])
           if (isAsyncAction) {
-            unprocessed = await before(...args, this[moduleName])
+            unprocessed = await before(...args, this[moduleKey])
           } else {
-            unprocessed = before(...args, this[moduleName])
+            unprocessed = before(...args, this[moduleKey])
           }
         }
         if (isAsync) {
-          await this[moduleName].initialize()
+          await this[moduleKey].initialize()
         } else {
-          if (is.Function(this[moduleName].initialize)) {
-            this[moduleName].initialize()
+          if (is.function(this[moduleKey].initialize)) {
+            this[moduleKey].initialize()
           }
         }
-        let afterInjectors = injectors.filter(({ after }) => after)
+        let afterInjectors = _injectors.filter(({ after }) => after)
         while (afterInjectors.length > 0) {
           let processed
           const { after, deps } = afterInjectors.shift()
           const isAsyncAction = is.asyncFunction(after)
-          const args = deps.map(dep => this[dep])
+          const args = deps.map(dep => this[this._modules.get(dep).moduleKey])
           if (isAsyncAction) {
-            processed = await after(...args, this[moduleName])
+            processed = await after(...args, this[moduleKey])
           } else {
-            processed = after(...args, this[moduleName])
+            processed = after(...args, this[moduleKey])
           }
         }
+        this[moduleKey].__status = moduleStatus.ready
       }
     } catch (e) {
-      throw new Error(`Injector failed to boot up. `)
+      console.log(e)
+      error.boot()
     }
     return config
   }
 
   inject(models) {
-    models.map(({ module, deps = [], params = {}, before, after } = {}) => {
-      const { name, _injectors = [] } = module
-      const { parameters = params, injectors = _injectors } =
-        this._modules.get(name) || {}
-      this._modules.set(name, {
-        Module: module,
-        parameters: Object.assign(parameters, params),
-        injectors: [...injectors, { deps, before, after }],
-      })
-    })
+    models.map(
+      ({ module, deps = [], params = {}, key, before, after } = {}) => {
+        if (!is.function(module)) {
+          return error.module()
+        }
+        const moduleName = module.prototype.constructor.name
+        const { _key = moduleName, _injectors = [] } = module
+        const moduleKey = key || _key
+        const originModule = this._modules.get(moduleName)
+        const { parameters = params, injectors = _injectors } =
+          originModule || {}
+        let override = {}
+        if (originModule) {
+          override = {
+            parameters: params,
+            injectors: [..._injectors, { deps, before, after }],
+          }
+        }
+        this._modules.set(
+          moduleName,
+          Object.assign(
+            {
+              Module: module,
+              moduleKey,
+              parameters: Object.assign(parameters, params),
+              injectors: [...injectors, { deps, before, after }],
+            },
+            override,
+          ),
+        )
+      },
+    )
+    this._loadModulesHistory.add(models)
     this._initialize()
     return this
   }
@@ -134,7 +181,9 @@ export default class Injector {
   distribute(dependenceMap) {
     dependenceMap.map(({ moduleName, dependence }) => {
       dependence.map(name => {
-        this[moduleName][`${prefix}${name}`] = this[moduleName]
+        const { moduleKey } = this._modules.get(moduleName)
+        const module = this._modules.get(name)
+        this[moduleKey][`${prefix}${module.moduleKey}`] = this[moduleKey]
       })
     })
     return this

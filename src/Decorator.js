@@ -1,5 +1,8 @@
 export default (dependencies = {}) => target => {
   target._injectors = [...(target._injectors || []), dependencies]
+  if (dependencies.key) {
+    target._key = dependencies.key
+  }
 }
 
 // export const prefix = '$$'
@@ -9,7 +12,6 @@ export default (dependencies = {}) => target => {
 //     Object.entries(config)
 //       .filter(([key]) => key !== 'allotParams' && key !== 'complete')
 //       .map(([key, value]) => {
-//         console.log(key)
 //         this[`${prefix}${key}`] = value
 //       })
 //   }

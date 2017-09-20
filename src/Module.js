@@ -1,5 +1,7 @@
 import is from "../lib/isType"
 import allot from "../lib/allot"
+import error from "../lib/error"
+import moduleStatus from "../lib/moduleStatus"
 
 export default class Module {
   constructor(args) {
@@ -7,8 +9,9 @@ export default class Module {
     if (isFunction) {
       this._allotParams(args)
     } else {
-      throw new Error('"_allotParams" must be a function')
+      error.allotParams()
     }
+    this.__status = moduleStatus.initial
   }
 
   _allotParams(config) {

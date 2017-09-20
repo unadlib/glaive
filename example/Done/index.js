@@ -1,9 +1,9 @@
-import Module from '../../src/Module'
+import Module from "../../src/Module"
 
 export default class Done extends Module {
-  constructor (...opts) {
+  constructor(...opts) {
     super(...opts)
-    this._moduleName = 'Done'
-    console.log('Done')
+    this._moduleName = "Done"
+    console.log("constructor Done")
   }
 }

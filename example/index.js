@@ -12,11 +12,8 @@ export default class Phone extends Injector {
     super(...config)
     this.inject([
       {
-        module: Call,
-        deps: ["Contacts", "Network"],
-      },
-      {
         module: Contacts,
+        key: "cccccontacts",
         deps: ["Storage"],
       },
       {
@@ -30,10 +27,6 @@ export default class Phone extends Injector {
         module: Storage,
         deps: ["Environment"],
       },
-      {
-        module: Done,
-        deps: ["Call"],
-      },
     ])
   }
 }
@@ -42,6 +35,19 @@ class FooBarPhone extends Phone {
   constructor(...arg) {
     super(...arg)
     this.inject([
+      {
+        module: Contacts,
+        key: "aaaaontacts",
+      },
+      {
+        module: Call,
+        key: "calls",
+        deps: ["Contacts", "Network"],
+      },
+      {
+        module: Done,
+        deps: ["Call"],
+      },
       {
         module: ContactsSearch,
         deps: ["Call"],
@@ -53,7 +59,8 @@ class FooBarPhone extends Phone {
 const phone = new FooBarPhone({
   state: "CN",
   done: done => {
-    // console.log(done,phone)
+    console.log("\n")
+    console.log(done, phone)
   },
 })
 

@@ -1,4 +1,4 @@
-/* glaive version 1.1.2 */
+/* glaive version 1.2.0 */
 ;(function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined"
     ? factory(exports)
@@ -251,6 +251,47 @@
     return this
   }
 
+  var ERROR = {
+    allotParams: "'allotParams' must be a function",
+    boot: "`Injector failed to boot up `",
+    module: "'module' must be a function or class",
+  }
+
+  var error = new Proxy(
+    {},
+    {
+      get: function get(target, name) {
+        return function(value) {
+          return ERROR[name] || value + " Error"
+        }
+      },
+    },
+  )
+
+  var error$1 = new Proxy(
+    {},
+    {
+      get: function get(target, name) {
+        return function(value) {
+          throw new Error(error[name](value))
+        }
+      },
+    },
+  )
+
+  var moduleStatus = new Proxy(
+    {},
+    {
+      get: function get(target, name) {
+        return new Map(
+          ["initial", "initialized", "booting", "ready"].map(function(i) {
+            return [i, i]
+          }),
+        ).get(name)
+      },
+    },
+  )
+
   var Injector = (function() {
     function Injector() {
       var config =
@@ -262,13 +303,14 @@
             ? this._allotParams
             : _config$allotParams
 
-      if (is.Function(allotParams)) {
+      if (is.function(allotParams)) {
         allotParams.call(this, config)
       } else {
-        throw new Error("'allotParams' must be a function.")
+        error$1.allotParams()
       }
       this._modules = new Map()
       this._queueModules = new Set()
+      this._loadModulesHistory = new Set()
       this._bootstrap(config).then(this._complete.bind(this))
     }
 
@@ -285,7 +327,7 @@
           var done = _ref.done
 
           this.initiated = true
-          is.function(done) && done(this.initiated)
+          return is.function(done) && done(this.initiated)
         },
       },
       {
@@ -372,31 +414,70 @@
           this._queueModules.forEach(function(moduleName) {
             var _modules$get = _this._modules.get(moduleName),
               Module = _modules$get.Module,
-              parameters = _modules$get.parameters
+              parameters = _modules$get.parameters,
+              moduleKey = _modules$get.moduleKey
 
-            _this[moduleName] = new Module(parameters)
+            _this[moduleKey] = new Module(parameters)
+            _this[moduleKey].__status = moduleStatus.initialized
           })
           this.distribute.call(this, dependenceMap)
           return this
         },
       },
       {
-        key: "_bootstrap",
-        value: async function _bootstrap(config) {
+        key: "_insureUnique",
+        value: function _insureUnique() {
           var _this2 = this
 
+          var overloadModules = []
+            .concat(toConsumableArray(this._loadModulesHistory))
+            .slice(0, -1)
+          overloadModules.forEach(function() {
+            var modules =
+              arguments.length > 0 && arguments[0] !== undefined
+                ? arguments[0]
+                : []
+            return modules.forEach(function(_ref5) {
+              var key = _ref5.key,
+                module = _ref5.module
+
+              var isRemove =
+                _this2._modules.get(module.prototype.constructor.name)
+                  .moduleKey !== key
+              if (!is.null(key) && !is.undefined(key) && isRemove) {
+                Reflect.deleteProperty(_this2, key)
+              }
+            })
+          })
+        },
+      },
+      {
+        key: "_bootstrap",
+        value: async function _bootstrap(config) {
+          var _this3 = this
+
           await sleep()
+          this._insureUnique()
           try {
             var queueModules = [].concat(toConsumableArray(this._queueModules))
             while (queueModules.length > 0) {
               var moduleName = queueModules.shift()
-              var current = this._modules.get(moduleName)
-              var isAsync = is.asyncFunction(this[moduleName].initialize)
-              var injectors = [].concat(toConsumableArray(current.injectors))
-              var beforeInjectors = injectors.filter(function(_ref5) {
-                var before = _ref5.before
+
+              var _modules$get2 = this._modules.get(moduleName),
+                injectors = _modules$get2.injectors,
+                moduleKey = _modules$get2.moduleKey
+
+              if (!this[moduleKey]) {
+                error$1.throw(moduleKey)
+                continue
+              }
+              var isAsync = is.asyncFunction(this[moduleKey].initialize)
+              var _injectors = [].concat(toConsumableArray(injectors))
+              var beforeInjectors = _injectors.filter(function(_ref6) {
+                var before = _ref6.before
                 return before
               })
+              this[moduleKey].__status = moduleStatus.booting
               while (beforeInjectors.length > 0) {
                 var unprocessed = void 0
 
@@ -406,29 +487,29 @@
 
                 var isAsyncAction = is.asyncFunction(before)
                 var args = deps.map(function(dep) {
-                  return _this2[dep]
+                  return _this3[_this3._modules.get(dep).moduleKey]
                 })
                 if (isAsyncAction) {
                   unprocessed = await before.apply(
                     undefined,
-                    toConsumableArray(args).concat([this[moduleName]]),
+                    toConsumableArray(args).concat([this[moduleKey]]),
                   )
                 } else {
                   unprocessed = before.apply(
                     undefined,
-                    toConsumableArray(args).concat([this[moduleName]]),
+                    toConsumableArray(args).concat([this[moduleKey]]),
                   )
                 }
               }
               if (isAsync) {
-                await this[moduleName].initialize()
+                await this[moduleKey].initialize()
               } else {
-                if (is.Function(this[moduleName].initialize)) {
-                  this[moduleName].initialize()
+                if (is.function(this[moduleKey].initialize)) {
+                  this[moduleKey].initialize()
                 }
               }
-              var afterInjectors = injectors.filter(function(_ref6) {
-                var after = _ref6.after
+              var afterInjectors = _injectors.filter(function(_ref7) {
+                var after = _ref7.after
                 return after
               })
               while (afterInjectors.length > 0) {
@@ -440,23 +521,25 @@
 
                 var _isAsyncAction = is.asyncFunction(after)
                 var _args = deps.map(function(dep) {
-                  return _this2[dep]
+                  return _this3[_this3._modules.get(dep).moduleKey]
                 })
                 if (_isAsyncAction) {
                   processed = await after.apply(
                     undefined,
-                    toConsumableArray(_args).concat([this[moduleName]]),
+                    toConsumableArray(_args).concat([this[moduleKey]]),
                   )
                 } else {
                   processed = after.apply(
                     undefined,
-                    toConsumableArray(_args).concat([this[moduleName]]),
+                    toConsumableArray(_args).concat([this[moduleKey]]),
                   )
                 }
               }
+              this[moduleKey].__status = moduleStatus.ready
             }
           } catch (e) {
-            throw new Error("Injector failed to boot up. ")
+            console.log(e)
+            error$1.boot()
           }
           return config
         },
@@ -464,42 +547,69 @@
       {
         key: "inject",
         value: function inject(models) {
-          var _this3 = this
+          var _this4 = this
 
           models.map(function() {
-            var _ref7 =
+            var _ref8 =
                 arguments.length > 0 && arguments[0] !== undefined
                   ? arguments[0]
                   : {},
-              module = _ref7.module,
-              _ref7$deps = _ref7.deps,
-              deps = _ref7$deps === undefined ? [] : _ref7$deps,
-              _ref7$params = _ref7.params,
-              params = _ref7$params === undefined ? {} : _ref7$params,
-              before = _ref7.before,
-              after = _ref7.after
+              module = _ref8.module,
+              _ref8$deps = _ref8.deps,
+              deps = _ref8$deps === undefined ? [] : _ref8$deps,
+              _ref8$params = _ref8.params,
+              params = _ref8$params === undefined ? {} : _ref8$params,
+              key = _ref8.key,
+              before = _ref8.before,
+              after = _ref8.after
 
-            var name = module.name,
+            if (!is.function(module)) {
+              return error$1.module()
+            }
+            var moduleName = module.prototype.constructor.name
+
+            var _module$_key = module._key,
+              _key = _module$_key === undefined ? moduleName : _module$_key,
               _module$_injectors = module._injectors,
               _injectors =
                 _module$_injectors === undefined ? [] : _module$_injectors
 
-            var _ref8 = _this3._modules.get(name) || {},
-              _ref8$parameters = _ref8.parameters,
-              parameters =
-                _ref8$parameters === undefined ? params : _ref8$parameters,
-              _ref8$injectors = _ref8.injectors,
-              injectors =
-                _ref8$injectors === undefined ? _injectors : _ref8$injectors
+            var moduleKey = key || _key
+            var originModule = _this4._modules.get(moduleName)
 
-            _this3._modules.set(name, {
-              Module: module,
-              parameters: Object.assign(parameters, params),
-              injectors: [].concat(toConsumableArray(injectors), [
-                { deps: deps, before: before, after: after },
-              ]),
-            })
+            var _ref9 = originModule || {},
+              _ref9$parameters = _ref9.parameters,
+              parameters =
+                _ref9$parameters === undefined ? params : _ref9$parameters,
+              _ref9$injectors = _ref9.injectors,
+              injectors =
+                _ref9$injectors === undefined ? _injectors : _ref9$injectors
+
+            var override = {}
+            if (originModule) {
+              override = {
+                parameters: params,
+                injectors: [].concat(toConsumableArray(_injectors), [
+                  { deps: deps, before: before, after: after },
+                ]),
+              }
+            }
+            _this4._modules.set(
+              moduleName,
+              Object.assign(
+                {
+                  Module: module,
+                  moduleKey: moduleKey,
+                  parameters: Object.assign(parameters, params),
+                  injectors: [].concat(toConsumableArray(injectors), [
+                    { deps: deps, before: before, after: after },
+                  ]),
+                },
+                override,
+              ),
+            )
           })
+          this._loadModulesHistory.add(models)
           this._initialize()
           return this
         },
@@ -507,14 +617,19 @@
       {
         key: "distribute",
         value: function distribute(dependenceMap) {
-          var _this4 = this
+          var _this5 = this
 
-          dependenceMap.map(function(_ref9) {
-            var moduleName = _ref9.moduleName,
-              dependence = _ref9.dependence
+          dependenceMap.map(function(_ref10) {
+            var moduleName = _ref10.moduleName,
+              dependence = _ref10.dependence
 
             dependence.map(function(name) {
-              _this4[moduleName]["" + prefix + name] = _this4[moduleName]
+              var _modules$get3 = _this5._modules.get(moduleName),
+                moduleKey = _modules$get3.moduleKey
+
+              var module = _this5._modules.get(name)
+              _this5[moduleKey]["" + prefix + module.moduleKey] =
+                _this5[moduleKey]
             })
           })
           return this
@@ -532,8 +647,9 @@
       if (isFunction) {
         this._allotParams(args)
       } else {
-        throw new Error('"_allotParams" must be a function')
+        error$1.allotParams()
       }
+      this.__status = moduleStatus.initial
     }
 
     createClass(Module, [
@@ -555,6 +671,9 @@
         toConsumableArray(target._injectors || []),
         [dependencies],
       )
+      if (dependencies.key) {
+        target._key = dependencies.key
+      }
     }
   }
 
@@ -565,7 +684,6 @@
   //     Object.entries(config)
   //       .filter(([key]) => key !== 'allotParams' && key !== 'complete')
   //       .map(([key, value]) => {
-  //         console.log(key)
   //         this[`${prefix}${key}`] = value
   //       })
   //   }

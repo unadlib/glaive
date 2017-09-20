@@ -4,6 +4,6 @@ export default class Storage extends Module {
   constructor(...opts) {
     super(...opts)
     this._moduleName = "Storage"
-    console.log("Storage")
+    console.log("constructor Storage")
   }
 }

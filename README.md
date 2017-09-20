@@ -8,18 +8,18 @@ Trying to build a new dependency module Injector
 [![npm](https://img.shields.io/npm/l/glaive.svg)](https://www.npmjs.com/package/glaive)
 
 ## Features
-* overall process async dependency module
-* after/before inject process
-* functional inject & decorator inject
-* custom Injector
-* implement module initialization lifecycle
-* inheritance of module
-* inheritance of module injector
-* override of module injector
-* merge options for value provider
-* custom options distribute to module
-* custom rule distribute to dependency module
-* custom distribute module name to dependency module
+* Overall process async dependency module
+* After/before inject process
+* Functional inject & decorator inject
+* Custom Injector
+* Implement module initialization lifecycle
+* Inheritance of module
+* Inheritance of module injector
+* Override of module injector
+* Merge options for value provider
+* Custom options distribute to module
+* Custom rule distribute to dependency module
+* Custom distribute module name to dependency module
 
 ## Usage
 ```bash

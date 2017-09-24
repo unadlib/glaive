@@ -22,6 +22,7 @@ Trying to build a new dependency module Injector
 * Custom distribute module name to dependency module
 * Before injection use `preInject`
 * Commons mount Params use `mountParams`
+* dependency Module `preDistribute`
 
 ## Usage
 ```bash

@@ -66,24 +66,26 @@ export default (
       }
     }
 
-    _initialize() {
+    _initialize(preDistribute) {
       const dependenceMap = this._merge(this._modules)
       this._queue(dependenceMap, this._queueModules)
       this._queueModules.forEach(moduleName => {
         const { Module, parameters, moduleKey, injectors } = this._modules.get(
           moduleName,
         )
-        // const dependences = new Set(
-        //   injectors.reduce((prev,{deps=[]})=>{
-        //     return [...prev,...deps]
-        //   },[])
-        // )
-        // const dependenceModules = {}
-        // dependences.forEach((name)=>{
-        //   const {moduleKey} = this._modules.get(name)
-        //   dependenceModules[moduleKey] = this[moduleKey]
-        // })
-        // this[moduleKey] = new Module({...parameters,...dependenceModules})
+        if (preDistribute) {
+          const dependences = new Set(
+            injectors.reduce((prev, { deps = [] }) => {
+              return [...prev, ...deps]
+            }, []),
+          )
+          const dependenceModules = {}
+          dependences.forEach(name => {
+            const { moduleKey } = this._modules.get(name)
+            dependenceModules[moduleKey] = this[moduleKey]
+          })
+          Object.assign(parameters, dependenceModules)
+        }
         this[moduleKey] = new Module(parameters)
         this.mountParams(moduleKey)
         this[moduleKey].__status = moduleStatus.initialized
@@ -110,7 +112,7 @@ export default (
       return this
     }
 
-    inject(modules, { preInject } = {}) {
+    inject(modules, { preInject, preDistribute } = {}) {
       preInject && this::preInject()
       modules.map(
         ({ module, deps = [], params = {}, key, before, after } = {}) => {
@@ -145,7 +147,7 @@ export default (
         },
       )
       this._loadModulesHistory.add(modules)
-      this._initialize()
+      this._initialize(preDistribute)
       return this
     }
 

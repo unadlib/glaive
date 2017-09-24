@@ -1,4 +1,4 @@
-/* glaive version 1.3.0 */
+/* glaive version 1.3.1 */
 ;(function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined"
     ? factory(exports)
@@ -464,7 +464,7 @@
         },
         {
           key: "_initialize",
-          value: function _initialize() {
+          value: function _initialize(preDistribute) {
             var _this2 = this
 
             var dependenceMap = this._merge(this._modules)
@@ -473,19 +473,30 @@
               var _modules$get = _this2._modules.get(moduleName),
                 Module = _modules$get.Module,
                 parameters = _modules$get.parameters,
-                moduleKey = _modules$get.moduleKey
-              // const dependences = new Set(
-              //   injectors.reduce((prev,{deps=[]})=>{
-              //     return [...prev,...deps]
-              //   },[])
-              // )
-              // const dependenceModules = {}
-              // dependences.forEach((name)=>{
-              //   const {moduleKey} = this._modules.get(name)
-              //   dependenceModules[moduleKey] = this[moduleKey]
-              // })
-              // this[moduleKey] = new Module({...parameters,...dependenceModules})
+                moduleKey = _modules$get.moduleKey,
+                injectors = _modules$get.injectors
 
+              if (preDistribute) {
+                var dependences = new Set(
+                  injectors.reduce(function(prev, _ref5) {
+                    var _ref5$deps = _ref5.deps,
+                      deps = _ref5$deps === undefined ? [] : _ref5$deps
+
+                    return [].concat(
+                      toConsumableArray(prev),
+                      toConsumableArray(deps),
+                    )
+                  }, []),
+                )
+                var dependenceModules = {}
+                dependences.forEach(function(name) {
+                  var _modules$get2 = _this2._modules.get(name),
+                    moduleKey = _modules$get2.moduleKey
+
+                  dependenceModules[moduleKey] = _this2[moduleKey]
+                })
+                Object.assign(parameters, dependenceModules)
+              }
               _this2[moduleKey] = new Module(parameters)
               _this2.mountParams(moduleKey)
               _this2[moduleKey].__status = moduleStatus.initialized
@@ -507,9 +518,9 @@
                 arguments.length > 0 && arguments[0] !== undefined
                   ? arguments[0]
                   : []
-              return modules.forEach(function(_ref5) {
-                var key = _ref5.key,
-                  module = _ref5.module
+              return modules.forEach(function(_ref6) {
+                var key = _ref6.key,
+                  module = _ref6.module
 
                 var isRemove =
                   _this3._modules.get(module.prototype.constructor.name)
@@ -532,26 +543,27 @@
           value: function inject(modules) {
             var _this4 = this
 
-            var _ref6 =
+            var _ref7 =
                 arguments.length > 1 && arguments[1] !== undefined
                   ? arguments[1]
                   : {},
-              preInject = _ref6.preInject
+              preInject = _ref7.preInject,
+              preDistribute = _ref7.preDistribute
 
             preInject && preInject.call(this)
             modules.map(function() {
-              var _ref7 =
+              var _ref8 =
                   arguments.length > 0 && arguments[0] !== undefined
                     ? arguments[0]
                     : {},
-                module = _ref7.module,
-                _ref7$deps = _ref7.deps,
-                deps = _ref7$deps === undefined ? [] : _ref7$deps,
-                _ref7$params = _ref7.params,
-                params = _ref7$params === undefined ? {} : _ref7$params,
-                key = _ref7.key,
-                before = _ref7.before,
-                after = _ref7.after
+                module = _ref8.module,
+                _ref8$deps = _ref8.deps,
+                deps = _ref8$deps === undefined ? [] : _ref8$deps,
+                _ref8$params = _ref8.params,
+                params = _ref8$params === undefined ? {} : _ref8$params,
+                key = _ref8.key,
+                before = _ref8.before,
+                after = _ref8.after
 
               if (!is.function(module)) {
                 return error$1.module()
@@ -567,13 +579,13 @@
               var moduleKey = key || _key
               var originModule = _this4._modules.get(moduleName)
 
-              var _ref8 = originModule || {},
-                _ref8$parameters = _ref8.parameters,
+              var _ref9 = originModule || {},
+                _ref9$parameters = _ref9.parameters,
                 parameters =
-                  _ref8$parameters === undefined ? params : _ref8$parameters,
-                _ref8$injectors = _ref8.injectors,
+                  _ref9$parameters === undefined ? params : _ref9$parameters,
+                _ref9$injectors = _ref9.injectors,
                 injectors =
-                  _ref8$injectors === undefined ? _injectors : _ref8$injectors
+                  _ref9$injectors === undefined ? _injectors : _ref9$injectors
 
               var override = {}
               if (originModule) {
@@ -600,7 +612,7 @@
               )
             })
             this._loadModulesHistory.add(modules)
-            this._initialize()
+            this._initialize(preDistribute)
             return this
           },
         },
@@ -609,13 +621,13 @@
           value: function distribute(dependenceMap) {
             var _this5 = this
 
-            dependenceMap.map(function(_ref9) {
-              var moduleName = _ref9.moduleName,
-                dependence = _ref9.dependence
+            dependenceMap.map(function(_ref10) {
+              var moduleName = _ref10.moduleName,
+                dependence = _ref10.dependence
 
               dependence.map(function(name) {
-                var _modules$get2 = _this5._modules.get(moduleName),
-                  moduleKey = _modules$get2.moduleKey
+                var _modules$get3 = _this5._modules.get(moduleName),
+                  moduleKey = _modules$get3.moduleKey
 
                 var module = _this5._modules.get(name)
                 _this5[moduleKey]["" + prefix + module.moduleKey] =
@@ -639,9 +651,9 @@
               while (queueModules.length > 0) {
                 var moduleName = queueModules.shift()
 
-                var _modules$get3 = this._modules.get(moduleName),
-                  injectors = _modules$get3.injectors,
-                  moduleKey = _modules$get3.moduleKey
+                var _modules$get4 = this._modules.get(moduleName),
+                  injectors = _modules$get4.injectors,
+                  moduleKey = _modules$get4.moduleKey
 
                 if (!this[moduleKey]) {
                   error$1.throw(moduleKey)
@@ -650,8 +662,8 @@
                 var isAsync = is.asyncFunction(this[moduleKey].initialize)
                 var _injectors = [].concat(toConsumableArray(injectors))
                 this[moduleKey].__status = moduleStatus.booting
-                var beforeInjectors = _injectors.filter(function(_ref10) {
-                  var before = _ref10.before
+                var beforeInjectors = _injectors.filter(function(_ref11) {
+                  var before = _ref11.before
                   return before
                 })
                 while (beforeInjectors.length > 0) {
@@ -684,8 +696,8 @@
                     this[moduleKey].initialize()
                   }
                 }
-                var afterInjectors = _injectors.filter(function(_ref11) {
-                  var after = _ref11.after
+                var afterInjectors = _injectors.filter(function(_ref12) {
+                  var after = _ref12.after
                   return after
                 })
                 while (afterInjectors.length > 0) {

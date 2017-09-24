@@ -74,13 +74,13 @@ export default (
           moduleName,
         )
         if (preDistribute) {
-          const dependences = new Set(
+          const dependencies = new Set(
             injectors.reduce((prev, { deps = [] }) => {
               return [...prev, ...deps]
             }, []),
           )
           const dependenceModules = {}
-          dependences.forEach(name => {
+          dependencies.forEach(name => {
             const { moduleKey } = this._modules.get(name)
             dependenceModules[moduleKey] = this[moduleKey]
           })

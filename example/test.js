@@ -1,4 +1,6 @@
-import { Injector, Module, Decorator } from "../src"
+import { Injector as getInjector, Module, Decorator } from "../src"
+
+const Injector = getInjector(class BaseModule {})
 
 class Call extends Module {}
 

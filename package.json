@@ -1,6 +1,6 @@
 {
   "name": "glaive",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Trying to build a new dependency module injector",
   "main": "dist/glaive.js",
   "scripts": {

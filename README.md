@@ -1,6 +1,6 @@
 # Glaive
 Trying to build a new dependency module Injector
----
+
 [![Travis](https://img.shields.io/travis/unadlib/glaive.svg)](https://travis-ci.org/unadlib/glaive)
 [![Coverage Status](https://coveralls.io/repos/github/unadlib/glaive/badge.svg?branch=master)](https://coveralls.io/github/unadlib/glaive?branch=master)
 [![npm](https://img.shields.io/npm/v/glaive.svg)](https://www.npmjs.com/package/glaive)
@@ -20,17 +20,19 @@ Trying to build a new dependency module Injector
 * Custom options distribute to module
 * Custom rule distribute to dependency module
 * Custom distribute module name to dependency module
+* Before injection use `preInject`
+* Commons mount Params use `mountParams`
 
 ## Usage
 ```bash
-npm install --save glaive
-//or use `yarn` command
-yarn add glaive
+yarn add glaive // or `npm install --save glaive`
 ```
 
 ## Example
 ```javascript
-import { Injector, Module, Decorator } from 'glaive'
+import { Injector as getInjector, Module, Decorator } from "glaive"
+
+const Injector = getInjector(class BaseModule {})
 
 class Call extends Module {}
 

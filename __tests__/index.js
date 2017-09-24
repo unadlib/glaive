@@ -1,9 +1,10 @@
 import { expect } from "chai"
-import { Injector, Module, Decorator } from "../src/index"
+import { Injector as DeafultInjector, Module, Decorator } from "../src/index"
 import is from "../lib/isType"
 import sleep from "../lib/sleep"
 import { ERROR } from "../lib/error"
 
+const Injector = DeafultInjector()
 describe("Glaive", () => {
   describe("#Module Test", () => {
     it("new Module Success test", () => {
@@ -106,9 +107,6 @@ describe("Glaive", () => {
 
       @Decorator({
         deps: ["Environment"],
-        after: environment => {
-          console.log(environment)
-        },
       })
       class NetWork extends Module {}
 
@@ -142,7 +140,6 @@ describe("Glaive", () => {
               module: Storage,
               deps: ["Environment"],
               before: async (environment, storage) => {
-                console.log(environment, storage)
                 await new Promise(resolve => setTimeout(resolve, 0))
               },
             },

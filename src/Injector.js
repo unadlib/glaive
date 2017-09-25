@@ -49,7 +49,7 @@ export default (
 
     _queue(modules = [], list) {
       let restModules = []
-      modules.map(({ moduleName, dependence = [] } = {}) => {
+      modules.forEach(({ moduleName, dependence = [] } = {}) => {
         const isNoneDependence = dependence.length === 0
         const rest = [...new Set(dependence.concat([...list]))].filter(
           item => ![...list].includes(item),
@@ -114,7 +114,7 @@ export default (
 
     inject(modules, { preInject, preDistribute } = {}) {
       preInject && this::preInject()
-      modules.map(
+      modules.forEach(
         ({ module, deps = [], params = {}, key, before, after } = {}) => {
           if (!is.function(module)) {
             return error.module()
@@ -152,8 +152,8 @@ export default (
     }
 
     distribute(dependenceMap) {
-      dependenceMap.map(({ moduleName, dependence }) => {
-        dependence.map(name => {
+      dependenceMap.forEach(({ moduleName, dependence }) => {
+        dependence.forEach(name => {
           const { moduleKey } = this._modules.get(moduleName)
           const module = this._modules.get(name)
           this[moduleKey][`${prefix}${module.moduleKey}`] = this[

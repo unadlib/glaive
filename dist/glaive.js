@@ -425,7 +425,7 @@
             var list = arguments[1]
 
             var restModules = []
-            modules.map(function() {
+            modules.forEach(function() {
               var _ref4 =
                   arguments.length > 0 && arguments[0] !== undefined
                     ? arguments[0]
@@ -477,7 +477,7 @@
                 injectors = _modules$get.injectors
 
               if (preDistribute) {
-                var dependences = new Set(
+                var dependencies = new Set(
                   injectors.reduce(function(prev, _ref5) {
                     var _ref5$deps = _ref5.deps,
                       deps = _ref5$deps === undefined ? [] : _ref5$deps
@@ -489,7 +489,7 @@
                   }, []),
                 )
                 var dependenceModules = {}
-                dependences.forEach(function(name) {
+                dependencies.forEach(function(name) {
                   var _modules$get2 = _this2._modules.get(name),
                     moduleKey = _modules$get2.moduleKey
 
@@ -551,7 +551,7 @@
               preDistribute = _ref7.preDistribute
 
             preInject && preInject.call(this)
-            modules.map(function() {
+            modules.forEach(function() {
               var _ref8 =
                   arguments.length > 0 && arguments[0] !== undefined
                     ? arguments[0]
@@ -621,11 +621,11 @@
           value: function distribute(dependenceMap) {
             var _this5 = this
 
-            dependenceMap.map(function(_ref10) {
+            dependenceMap.forEach(function(_ref10) {
               var moduleName = _ref10.moduleName,
                 dependence = _ref10.dependence
 
-              dependence.map(function(name) {
+              dependence.forEach(function(name) {
                 var _modules$get3 = _this5._modules.get(moduleName),
                   moduleKey = _modules$get3.moduleKey
 
